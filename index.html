@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Novedades Alondra | Accesorios para Dama y Niñas</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            alondra: {
+              purple: '#8e24aa',
+              darkPurple: '#6a1b9a',
+              pink: '#d81b60',
+              lightPink: '#fce4ec',
+            }
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="text-slate-800 min-h-screen bg-slate-50 flex flex-col justify-between pb-24">
+
+  <!-- Header -->
+  <header class="bg-white sticky top-0 z-40 border-b border-purple-100 shadow-sm">
+    <div class="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-purple-600 to-pink-500 flex items-center justify-center text-white font-black shadow-md text-sm">NA</div>
+        <div>
+          <h1 class="font-black text-sm tracking-tight text-slate-900">Novedades Alondra</h1>
+          <p class="text-[10px] font-bold text-alondra-pink uppercase tracking-wider">Accesorios para Dama y Niñas</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-2">
+        <button onclick="openCart()" class="relative bg-purple-50 hover:bg-purple-100 text-alondra-purple px-3.5 py-2 rounded-2xl text-xs font-bold transition flex items-center gap-2">
+          <i class="fa-solid fa-bag-shopping"></i>
+          <span>Carrito</span>
+          <span id="cart-badge" class="bg-alondra-pink text-white w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-black hidden">0</span>
+        </button>
+        <a href="admin.html" target="_blank" class="bg-slate-100 hover:bg-slate-200 text-slate-600 w-9 h-9 rounded-2xl flex items-center justify-center transition" title="Panel Admin">
+          <i class="fa-solid fa-gear text-xs"></i>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Banner Principal -->
+  <div class="bg-gradient-to-r from-purple-900 via-alondra-purple to-alondra-pink text-white py-8 px-4 text-center">
+    <div class="max-w-xl mx-auto space-y-2">
+      <span class="bg-white/20 text-white text-[10px] font-extrabold px-3 py-1 rounded-full uppercase tracking-widest inline-block">✨ Nueva Colección</span>
+      <h2 class="text-xl md:text-2xl font-black">Bisutería y Detalles con Amor</h2>
+      <p class="text-xs text-purple-100">Encuentra los accesorios ideales para lucir increíble o consentir a las pequeñas del hogar.</p>
+    </div>
+  </div>
+
+  <!-- Catálogo Principal -->
+  <main class="max-w-5xl mx-auto px-4 mt-6 flex-1 w-full">
+    <div class="flex items-center justify-between mb-4">
+      <h3 class="font-black text-slate-900 text-base">Catálogo Disponible</h3>
+      <span id="product-count" class="text-xs text-slate-400 font-bold">0 piezas</span>
+    </div>
+
+    <div id="product-grid" class="grid grid-cols-2 md:grid-cols-3 gap-4">
+      <!-- Se llena dinámicamente -->
+    </div>
+  </main>
+
+  <!-- Carrito Drawer / Modal -->
+  <div id="cart-modal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-50 hidden flex justify-end">
+    <div class="bg-white w-full max-w-md h-full flex flex-col shadow-2xl animate-in slide-in-from-right duration-300">
+      <div class="p-4 border-b flex justify-between items-center bg-slate-50">
+        <div class="flex items-center gap-2">
+          <i class="fa-solid fa-bag-shopping text-alondra-purple"></i>
+          <h3 class="font-extrabold text-sm text-slate-900">Tu Carrito de Compras</h3>
+        </div>
+        <button onclick="closeCart()" class="w-8 h-8 rounded-full bg-slate-200/60 flex items-center justify-center text-slate-600 hover:bg-slate-200">
+          <i class="fa-solid fa-xmark text-xs"></i>
+        </button>
+      </div>
+
+      <div id="cart-items" class="flex-1 overflow-y-auto p-4 space-y-3 divide-y divide-slate-100">
+        <!-- Ítems del carrito -->
+      </div>
+
+      <div class="p-4 border-t bg-slate-50 space-y-3">
+        <div class="flex justify-between items-center font-black text-sm text-slate-900">
+          <span>Total a pagar:</span>
+          <span id="cart-total" class="text-alondra-pink text-base">$0.00 MXN</span>
+        </div>
+        <button onclick="checkoutWhatsApp()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold py-3.5 rounded-2xl text-xs flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/20 transition">
+          <i class="fa-brands fa-whatsapp text-base"></i> Enviar Pedido por WhatsApp
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="mt-16 bg-white border-t border-slate-100 py-6 text-center text-xs text-slate-400">
+    <p class="font-bold text-slate-600">Novedades Alondra</p>
+    <p class="text-[10px] mt-1">Accesorios para Dama y Niñas • Hecho con cariño</p>
+  </footer>
+
+  <script>
+    const DB_KEY = 'bisuteria_products_db';
+    const formatMXN = (val) => new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(val);
+
+    let defaultProducts = [
+      {
+        id: 101,
+        title: "Moño Coquette de Satín Rosa con Cristales",
+        price: 120.00,
+        stock: 8,
+        category: "Niñas",
+        images: ["https://images.unsplash.com/photo-1611591475140-137da1f2d224?w=600"],
+        description: "Precioso moño confeccionado en satín de alta calidad con broche francés resistente."
+      },
+      {
+        id: 102,
+        title: "Juego de Collar y Aretes Chapa de Oro 14k",
+        price: 380.00,
+        stock: 3,
+        category: "Dama",
+        images: ["https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=600"],
+        description: "Set elegante para dama con dijes de mariposa y finos acabados."
+      }
+    ];
+
+    let products = JSON.parse(localStorage.getItem(DB_KEY)) || defaultProducts;
+    let cart = [];
+
+    function renderCatalog() {
+      const grid = document.getElementById('product-grid');
+      document.getElementById('product-count').innerText = `${products.length} piezas`;
+      grid.innerHTML = '';
+
+      if (products.length === 0) {
+        grid.innerHTML = `<div class="col-span-2 text-center py-12 text-slate-400 text-xs">No hay productos disponibles por el momento.</div>`;
+        return;
+      }
+
+      products.forEach(p => {
+        const cover = (p.images && p.images[0]) ? p.images[0] : 'https://via.placeholder.com/300';
+        grid.innerHTML += `
+          <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden flex flex-col justify-between group hover:shadow-md transition">
+            <div>
+              <div class="relative aspect-square overflow-hidden bg-slate-100">
+                <img src="${cover}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+                <span class="absolute top-2 left-2 bg-white/90 backdrop-blur-sm text-[9px] font-extrabold text-alondra-purple uppercase px-2.5 py-1 rounded-full shadow-sm">${p.category}</span>
+              </div>
+              <div class="p-3.5 space-y-1">
+                <h4 class="font-bold text-xs text-slate-900 line-clamp-2">${p.title}</h4>
+                <p class="text-[10px] text-slate-400 line-clamp-1">${p.description || ''}</p>
+              </div>
+            </div>
+            <div class="p-3.5 pt-0 flex items-center justify-between">
+              <div>
+                <span class="text-xs font-black text-alondra-pink">${formatMXN(p.price)}</span>
+                <p class="text-[9px] text-slate-400 font-bold">Stock: ${p.stock}</p>
+              </div>
+              <button onclick="addToCart(${p.id})" class="w-9 h-9 rounded-xl bg-purple-50 hover:bg-alondra-purple hover:text-white text-alondra-purple flex items-center justify-center transition shadow-sm">
+                <i class="fa-solid fa-plus text-xs"></i>
+              </button>
+            </div>
+          </div>
+        `;
+      });
+    }
+
+    function addToCart(id) {
+      const p = products.find(prod => prod.id === id);
+      if (!p || p.stock <= 0) {
+        alert('Lo sentimos, este producto está agotado.');
+        return;
+      }
+
+      const existing = cart.find(item => item.id === id);
+      if (existing) {
+        if (existing.qty < p.stock) {
+          existing.qty++;
+        } else {
+          alert('Has alcanzado el límite de stock disponible para este producto.');
+          return;
+        }
+      } else {
+        cart.push({ ...p, qty: 1 });
+      }
+      updateCartUI();
+      openCart();
+    }
+
+    function updateCartUI() {
+      const badge = document.getElementById('cart-badge');
+      const itemsContainer = document.getElementById('cart-items');
+      const totalEl = document.getElementById('cart-total');
+
+      const totalItems = cart.reduce((sum, item) => sum + item.qty, 0);
+      if (totalItems > 0) {
+        badge.innerText = totalItems;
+        badge.classList.remove('hidden');
+      } else {
+        badge.classList.add('hidden');
+      }
+
+      itemsContainer.innerHTML = '';
+      if (cart.length === 0) {
+        itemsContainer.innerHTML = `<div class="text-center py-12 text-slate-400 text-xs">Tu carrito está vacío.</div>`;
+        totalEl.innerText = formatMXN(0);
+        return;
+      }
+
+      let total = 0;
+      cart.forEach(item => {
+        total += item.price * item.qty;
+        const cover = (item.images && item.images[0]) ? item.images[0] : '';
+        itemsContainer.innerHTML += `
+          <div class="py-3 flex items-center justify-between gap-3">
+            <div class="flex items-center gap-3">
+              <img src="${cover}" class="w-12 h-12 rounded-xl object-cover border">
+              <div>
+                <h5 class="font-bold text-xs text-slate-900">${item.title}</h5>
+                <p class="text-xs text-alondra-pink font-bold">${formatMXN(item.price)} x ${item.qty}</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <button onclick="changeQty(${item.id}, -1)" class="w-7 h-7 rounded-lg bg-slate-100 flex items-center justify-center text-slate-600 font-bold">-</button>
+              <span class="text-xs font-bold w-5 text-center">${item.qty}</span>
+              <button onclick="changeQty(${item.id}, 1)" class="w-7 h-7 rounded-lg bg-slate-100 flex items-center justify-center text-slate-600 font-bold">+</button>
+            </div>
+          </div>
+        `;
+      });
+
+      totalEl.innerText = formatMXN(total);
+    }
+
+    function changeQty(id, delta) {
+      const item = cart.find(i => i.id === id);
+      const product = products.find(p => p.id === id);
+      if (!item) return;
+
+      item.qty += delta;
+      if (item.qty > product.stock) {
+        item.qty = product.stock;
+        alert('No hay más stock disponible.');
+      }
+      if (item.qty <= 0) {
+        cart = cart.filter(i => i.id !== id);
+      }
+      updateCartUI();
+    }
+
+    function openCart() {
+      document.getElementById('cart-modal').classList.remove('hidden');
+    }
+
+    function closeCart() {
+      document.getElementById('cart-modal').classList.add('hidden');
+    }
+
+    function checkoutWhatsApp() {
+      if (cart.length === 0) return;
+      let msg = "¡Hola! Me gustaría hacer el siguiente pedido en *Novedades Alondra*:\n\n";
+      let total = 0;
+      cart.forEach(item => {
+        msg += `• ${item.qty}x ${item.title} (${formatMXN(item.price * item.qty)})\n`;
+        total += item.price * item.qty;
+      });
+      msg += `\n*Total a pagar:* ${formatMXN(total)}\n\nQuedo a la espera de los datos de pago y envío. ¡Gracias!`;
+
+      const phone = "529615442185";
+      window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank');
+    }
+
+    window.onload = function() {
+      renderCatalog();
+    };
+  </script>
+</body>
+</html>
