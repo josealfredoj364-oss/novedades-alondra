@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Panel de Administración - Novedades Alondra</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            alondra: {
+              purple: '#8e24aa',
+              darkPurple: '#6a1b9a',
+              pink: '#d81b60',
+              lightPink: '#fce4ec',
+            }
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="text-slate-800 min-h-screen bg-slate-50 pb-20">
+
+  <!-- Admin Header -->
+  <header class="bg-slate-900 text-white shadow-md">
+    <div class="max-w-5xl mx-auto px-4 py-4 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-alondra-purple flex items-center justify-center font-black text-white text-lg">A</div>
+        <div>
+          <h1 class="font-extrabold text-base">Panel Admin • Novedades Alondra</h1>
+          <p class="text-xs text-slate-400">Gestión de Inventario y Productos</p>
+        </div>
+      </div>
+      <a href="index.html" target="_blank" class="bg-white/10 hover:bg-white/20 text-white text-xs font-bold px-3.5 py-2 rounded-xl transition flex items-center gap-2">
+        <i class="fa-solid fa-store"></i> Ver Tienda Pública
+      </a>
+    </div>
+  </header>
+
+  <main class="max-w-5xl mx-auto px-4 mt-6 space-y-6">
+
+    <!-- Acciones Rápidas -->
+    <div class="flex items-center justify-between bg-white p-5 rounded-2xl shadow-sm border border-slate-100">
+      <div>
+        <h2 class="font-extrabold text-slate-900 text-lg">Inventario de Bisutería</h2>
+        <p class="text-xs text-slate-500">Agrega, edita o elimina accesorios de tu catálogo.</p>
+      </div>
+      <button onclick="openProductModal()" class="bg-alondra-purple hover:bg-alondra-darkPurple text-white font-bold px-4 py-2.5 rounded-xl text-xs flex items-center gap-2 shadow transition">
+        <i class="fa-solid fa-plus"></i> Nuevo Producto
+      </button>
+    </div>
+
+    <!-- Lista de Productos -->
+    <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+      <div class="p-4 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
+        <span class="text-xs font-extrabold text-slate-500 uppercase tracking-wider">Productos Registrados</span>
+        <span id="total-admin-count" class="text-xs font-bold bg-purple-100 text-purple-800 px-2.5 py-0.5 rounded-full">0 productos</span>
+      </div>
+      
+      <div id="admin-product-list" class="divide-y divide-slate-100">
+        <!-- Injected dynamically -->
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Modal para Agregar / Editar Producto -->
+  <div id="product-modal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
+      <div class="flex justify-between items-center border-b pb-3">
+        <h3 id="modal-heading" class="font-extrabold text-base text-slate-900">Agregar Nuevo Producto</h3>
+        <button onclick="closeProductModal()" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-600 transition">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <form id="product-form" onsubmit="saveProduct(event)" class="space-y-4">
+        <input type="hidden" id="edit-id">
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">Nombre del Accesorio</label>
+          <input type="text" id="prod-title" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:border-alondra-purple" placeholder="Ej. Aretes de Cristal Coquette">
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">Precio ($ MXN)</label>
+            <input type="number" step="0.5" id="prod-price" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:border-alondra-purple" placeholder="120.00">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">Stock (Piezas)</label>
+            <input type="number" id="prod-stock" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:border-alondra-purple" placeholder="10">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">Categoría</label>
+          <select id="prod-category" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:border-alondra-purple">
+            <option value="Dama">Dama</option>
+            <option value="Niñas">Niñas</option>
+            <option value="Kits y Sets">Kits y Sets</option>
+            <option value="Novedades">Novedades</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">URLs de Fotos (Separadas por comas)</label>
+          <textarea id="prod-images" rows="2" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:border-alondra-purple" placeholder="https://imagen1.jpg, https://imagen2.jpg"></textarea>
+          <p class="text-[10px] text-slate-400 mt-1">Puedes subir tus fotos a Imgur o usar enlaces directos de imágenes de internet.</p>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">Descripción</label>
+          <textarea id="prod-desc" rows="2" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:border-alondra-purple" placeholder="Detalles del material, tamaño, etc."></textarea>
+        </div>
+
+        <div class="pt-2 flex gap-3">
+          <button type="button" onclick="closeProductModal()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-3 rounded-xl text-xs transition">Cancelar</button>
+          <button type="submit" class="flex-1 bg-alondra-purple hover:bg-alondra-darkPurple text-white font-bold py-3 rounded-xl text-xs transition">Guardar Producto</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    const DB_KEY = 'bisuteria_products_db';
+    const formatMXN = (val) => new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(val);
+
+    let defaultProducts = [
+      {
+        id: 101,
+        title: "Moño Coquette de Satín Rosa con Cristales",
+        price: 120.00,
+        stock: 8,
+        category: "Niñas",
+        images: ["https://images.unsplash.com/photo-1611591475140-137da1f2d224?w=600"],
+        description: "Precioso moño confeccionado en satín de alta calidad con broche francés resistente."
+      },
+      {
+        id: 102,
+        title: "Juego de Collar y Aretes Chapa de Oro 14k",
+        price: 380.00,
+        stock: 3,
+        category: "Dama",
+        images: ["https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=600"],
+        description: "Set elegante para dama con dijes de mariposa y finos acabados."
+      }
+    ];
+
+    let products = JSON.parse(localStorage.getItem(DB_KEY)) || defaultProducts;
+
+    function renderAdminList() {
+      const container = document.getElementById('admin-product-list');
+      document.getElementById('total-admin-count').innerText = `${products.length} productos`;
+      container.innerHTML = '';
+
+      if (products.length === 0) {
+        container.innerHTML = `<div class="p-8 text-center text-slate-400 text-xs">No hay productos registrados.</div>`;
+        return;
+      }
+
+      products.forEach(p => {
+        const cover = (p.images && p.images[0]) ? p.images[0] : 'https://via.placeholder.com/100';
+        container.innerHTML += `
+          <div class="p-4 flex items-center justify-between gap-4 hover:bg-slate-50/80 transition">
+            <div class="flex items-center gap-3 min-w-0">
+              <img src="${cover}" class="w-12 h-12 rounded-xl object-cover border flex-shrink-0">
+              <div class="min-w-0">
+                <span class="text-[10px] font-extrabold text-alondra-purple uppercase tracking-wider bg-purple-50 px-2 py-0.5 rounded-full">${p.category}</span>
+                <h4 class="font-bold text-xs text-slate-900 truncate mt-1">${p.title}</h4>
+                <p class="text-xs text-slate-500">${formatMXN(p.price)} • Stock: <span class="font-bold text-slate-700">${p.stock} pz</span></p>
+              </div>
+            </div>
+            <div class="flex items-center gap-2 flex-shrink-0">
+              <button onclick="editProduct(${p.id})" class="w-8 h-8 rounded-xl bg-purple-50 hover:bg-purple-100 text-alondra-purple flex items-center justify-center transition" title="Editar">
+                <i class="fa-solid fa-pen text-xs"></i>
+              </button>
+              <button onclick="deleteProduct(${p.id})" class="w-8 h-8 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 flex items-center justify-center transition" title="Eliminar">
+                <i class="fa-solid fa-trash-can text-xs"></i>
+              </button>
+            </div>
+          </div>
+        `;
+      });
+    }
+
+    function openProductModal(id = null) {
+      document.getElementById('product-modal').classList.remove('hidden');
+      if (id) {
+        document.getElementById('modal-heading').innerText = "Editar Producto";
+        const p = products.find(prod => prod.id === id);
+        if (p) {
+          document.getElementById('edit-id').value = p.id;
+          document.getElementById('prod-title').value = p.title;
+          document.getElementById('prod-price').value = p.price;
+          document.getElementById('prod-stock').value = p.stock;
+          document.getElementById('prod-category').value = p.category;
+          document.getElementById('prod-images').value = p.images.join(', ');
+          document.getElementById('prod-desc').value = p.description || '';
+        }
+      } else {
+        document.getElementById('modal-heading').innerText = "Agregar Nuevo Producto";
+        document.getElementById('product-form').reset();
+        document.getElementById('edit-id').value = "";
+      }
+    }
+
+    function closeProductModal() {
+      document.getElementById('product-modal').classList.add('hidden');
+    }
+
+    function saveProduct(e) {
+      e.preventDefault();
+      const idVal = document.getElementById('edit-id').value;
+      const title = document.getElementById('prod-title').value;
+      const price = parseFloat(document.getElementById('prod-price').value);
+      const stock = parseInt(document.getElementById('prod-stock').value);
+      const category = document.getElementById('prod-category').value;
+      const imagesInput = document.getElementById('prod-images').value;
+      const description = document.getElementById('prod-desc').value;
+
+      const images = imagesInput.split(',').map(img => img.trim()).filter(img => img.length > 0);
+
+      if (idVal) {
+        const p = products.find(prod => prod.id == idVal);
+        if (p) {
+          p.title = title;
+          p.price = price;
+          p.stock = stock;
+          p.category = category;
+          p.images = images;
+          p.description = description;
+        }
+      } else {
+        const newProduct = {
+          id: Date.now(),
+          title,
+          price,
+          stock,
+          category,
+          images,
+          description
+        };
+        products.push(newProduct);
+      }
+
+      localStorage.setItem(DB_KEY, JSON.stringify(products));
+      renderAdminList();
+      closeProductModal();
+    }
+
+    function editProduct(id) {
+      openProductModal(id);
+    }
+
+    function deleteProduct(id) {
+      if (confirm('¿Estás seguro de eliminar este producto de la tienda?')) {
+        products = products.filter(p => p.id !== id);
+        localStorage.setItem(DB_KEY, JSON.stringify(products));
+        renderAdminList();
+      }
+    }
+
+    window.onload = function() {
+      renderAdminList();
+    };
+  </script>
+</body>
+</html>
